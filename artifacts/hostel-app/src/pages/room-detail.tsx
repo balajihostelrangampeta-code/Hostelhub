@@ -5,6 +5,7 @@ import {
   useUpdateRoom,
   useUpdateStudent,
   useListRooms,
+  useListStudents,
   getGetRoomQueryKey,
   getListRoomsQueryKey,
 } from "@workspace/api-client-react";
@@ -25,7 +26,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench, Mail } from "lucide-react";
+import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench, Mail, UserPlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -206,6 +207,99 @@ function StudentEditDialog({
             </div>
           </form>
         </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function AssignStudentDialog({
+  roomId,
+  roomNumber,
+  currentStudentIds,
+  isFull,
+  onAssigned,
+}: {
+  roomId: number;
+  roomNumber: string;
+  currentStudentIds: number[];
+  isFull: boolean;
+  onAssigned: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const { toast } = useToast();
+  const { data: allStudents = [] } = useListStudents();
+  const updateStudent = useUpdateStudent();
+
+  const unassigned = allStudents.filter(
+    (s) => !currentStudentIds.includes(s.id) && s.status === "active"
+  );
+
+  const handleAssign = () => {
+    if (!selectedId) return;
+    updateStudent.mutate(
+      { id: Number(selectedId), data: { roomId } },
+      {
+        onSuccess: () => {
+          toast({ title: "Student assigned to room" });
+          setOpen(false);
+          setSelectedId("");
+          onAssigned();
+        },
+        onError: () => {
+          toast({ title: "Failed to assign student", variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="outline" disabled={isFull} className="gap-1.5">
+          <UserPlus className="w-4 h-4" />
+          Add Student
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Assign Student to Room {roomNumber}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-1">
+          {unassigned.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-4">
+              No unassigned active students available.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Pick an active student who isn't in a room yet.
+              </p>
+              <Select value={selectedId} onValueChange={setSelectedId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a student…" />
+                </SelectTrigger>
+                <SelectContent>
+                  {unassigned.map((s) => (
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.name}
+                      {s.email ? ` — ${s.email}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleAssign}
+              disabled={!selectedId || updateStudent.isPending}
+            >
+              {updateStudent.isPending ? "Assigning…" : "Assign"}
+            </Button>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
@@ -490,27 +584,43 @@ export default function RoomDetail() {
       {/* Students in this room */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">
-            Students in Room {room.number}
-          </h2>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Users className="w-4 h-4" />
-            <span>{room.students?.length ?? 0} resident{(room.students?.length ?? 0) !== 1 ? "s" : ""}</span>
+          <div>
+            <h2 className="text-xl font-semibold">Students in Room {room.number}</h2>
+            <p className="text-sm text-muted-foreground">
+              {room.students?.length ?? 0} resident{(room.students?.length ?? 0) !== 1 ? "s" : ""}
+              {room.occupied >= room.capacity ? " · Room full" : ` · ${room.capacity - room.occupied} bed${room.capacity - room.occupied !== 1 ? "s" : ""} free`}
+            </p>
           </div>
+          <AssignStudentDialog
+            roomId={roomId}
+            roomNumber={room.number}
+            currentStudentIds={(room.students ?? []).map((s) => s.id)}
+            isFull={room.occupied >= room.capacity}
+            onAssigned={() => {
+              queryClient.invalidateQueries({ queryKey: getGetRoomQueryKey(roomId) });
+              queryClient.invalidateQueries({ queryKey: getListRoomsQueryKey() });
+            }}
+          />
         </div>
 
         {!room.students || room.students.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-10 text-center">
               <Users className="w-10 h-10 text-muted-foreground mb-3" />
-              <p className="font-medium">No students in this room</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Assign a student to this room from the{" "}
-                <Link href="/students">
-                  <span className="text-primary hover:underline cursor-pointer">Students</span>
-                </Link>{" "}
-                page
+              <p className="font-medium">No students in this room yet</p>
+              <p className="text-sm text-muted-foreground mt-1 mb-4">
+                Use the "Add Student" button above to assign someone.
               </p>
+              <AssignStudentDialog
+                roomId={roomId}
+                roomNumber={room.number}
+                currentStudentIds={[]}
+                isFull={false}
+                onAssigned={() => {
+                  queryClient.invalidateQueries({ queryKey: getGetRoomQueryKey(roomId) });
+                  queryClient.invalidateQueries({ queryKey: getListRoomsQueryKey() });
+                }}
+              />
             </CardContent>
           </Card>
         ) : (
