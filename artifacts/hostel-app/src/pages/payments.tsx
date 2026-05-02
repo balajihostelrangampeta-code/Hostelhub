@@ -303,49 +303,50 @@ export default function Payments() {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Student</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Description</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Amount</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Due Date</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Paid Date</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((payment, idx) => (
-                <tr
-                  key={payment.id}
-                  className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
-                  data-testid={`row-payment-${payment.id}`}
-                >
-                  <td className="px-4 py-3">
-                    <Link href={`/students/${payment.studentId}`}>
-                      <span className="font-medium hover:text-primary cursor-pointer transition-colors">
-                        {payment.studentName}
+        <>
+          {/* Mobile card list */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {payments.map((payment) => (
+              <Card key={payment.id} data-testid={`row-payment-${payment.id}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <Link href={`/students/${payment.studentId}`}>
+                        <span className="font-semibold hover:text-primary cursor-pointer transition-colors block truncate">
+                          {payment.studentName}
+                        </span>
+                      </Link>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {payment.description || payment.month || "—"}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full border ${statusColors[payment.status] || ""}`}
+                        data-testid={`status-payment-${payment.id}`}
+                      >
+                        {payment.status}
                       </span>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {payment.description || payment.month || "—"}
-                  </td>
-                  <td className="px-4 py-3 font-semibold">{formatCurrency(payment.amount)}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{payment.dueDate}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{payment.paidDate || "—"}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full border ${statusColors[payment.status] || ""}`}
-                      data-testid={`status-payment-${payment.id}`}
-                    >
-                      {payment.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <div className="flex gap-4 text-sm">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Amount</p>
+                        <p className="font-bold">{formatCurrency(payment.amount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Due</p>
+                        <p className="font-medium">{payment.dueDate}</p>
+                      </div>
+                      {payment.paidDate && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Paid</p>
+                          <p className="font-medium">{payment.paidDate}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
                       {payment.status !== "paid" && (
                         <Button
                           variant="ghost"
@@ -368,12 +369,85 @@ export default function Payments() {
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
-                  </td>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Student</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Description</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Amount</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Due Date</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Paid Date</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">Status</th>
+                  <th className="px-4 py-3" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {payments.map((payment, idx) => (
+                  <tr
+                    key={payment.id}
+                    className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
+                    data-testid={`row-payment-${payment.id}`}
+                  >
+                    <td className="px-4 py-3">
+                      <Link href={`/students/${payment.studentId}`}>
+                        <span className="font-medium hover:text-primary cursor-pointer transition-colors">
+                          {payment.studentName}
+                        </span>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">
+                      {payment.description || payment.month || "—"}
+                    </td>
+                    <td className="px-4 py-3 font-semibold">{formatCurrency(payment.amount)}</td>
+                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{payment.dueDate}</td>
+                    <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">{payment.paidDate || "—"}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`text-xs font-medium px-2 py-1 rounded-full border whitespace-nowrap ${statusColors[payment.status] || ""}`}
+                        data-testid={`status-payment-${payment.id}`}
+                      >
+                        {payment.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 justify-end">
+                        {payment.status !== "paid" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMarkPaid(payment.id)}
+                            disabled={updatePayment.isPending}
+                            data-testid={`button-mark-paid-${payment.id}`}
+                            title="Mark as paid"
+                          >
+                            <CheckCircle className="w-4 h-4 text-green-600" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(payment.id)}
+                          disabled={deletePayment.isPending}
+                          data-testid={`button-delete-payment-${payment.id}`}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

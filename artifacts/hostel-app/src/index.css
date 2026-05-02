@@ -352,7 +352,6 @@
   display: flex;
   background-color: hsl(var(--card));
   border-top: 1px solid hsl(var(--border));
-  /* iOS safe area bottom */
   padding-bottom: env(safe-area-inset-bottom);
 }
 @media (min-width: 768px) {
@@ -360,23 +359,29 @@
     display: none;
   }
 }
+/* The <Link> renders an <a> — make it stretch evenly */
+.bottom-tabs > a {
+  flex: 1;
+  display: flex;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
 .tab-item {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.25rem;
-  padding: 0.625rem 0;
-  /* 44px minimum touch target for iOS HIG */
-  min-height: 3rem;
+  gap: 0.2rem;
+  padding: 0.5rem 0.25rem;
+  /* 56px tall — comfortably above 44px iOS HIG */
+  min-height: 3.5rem;
   cursor: pointer;
   color: hsl(var(--muted-foreground));
-  transition: color 0.15s;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s, background-color 0.1s;
   user-select: none;
   -webkit-user-select: none;
+  width: 100%;
 }
 .tab-item:active {
   background-color: hsl(var(--muted) / 0.5);
@@ -390,7 +395,9 @@
   flex-shrink: 0;
 }
 .tab-label {
-  font-size: 0.6875rem;
-  font-weight: 500;
+  font-size: 0.625rem;
+  font-weight: 600;
   line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
