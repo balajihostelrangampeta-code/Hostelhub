@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Hostel Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student management
+  - name: rooms
+    description: Room management
+  - name: payments
+    description: Payment installment management
+  - name: dashboard
+    description: Dashboard statistics
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,335 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students
+      parameters:
+        - name: roomId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Add a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentBody"
+      responses:
+        "201":
+          description: Student created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStudentBody"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /rooms:
+    get:
+      operationId: listRooms
+      tags: [rooms]
+      summary: List all rooms
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, full, maintenance]
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+    post:
+      operationId: createRoom
+      tags: [rooms]
+      summary: Create a new room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateRoomBody"
+      responses:
+        "201":
+          description: Room created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /rooms/{id}:
+    get:
+      operationId: getRoom
+      tags: [rooms]
+      summary: Get a room by ID with its students
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Room with students
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoomWithStudents"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateRoom
+      tags: [rooms]
+      summary: Update a room
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateRoomBody"
+      responses:
+        "200":
+          description: Updated room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    delete:
+      operationId: deleteRoom
+      tags: [rooms]
+      summary: Delete a room
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List all payment installments
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, overdue]
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Add a payment installment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePaymentBody"
+      responses:
+        "201":
+          description: Payment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [payments]
+      summary: Get a payment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    put:
+      operationId: updatePayment
+      tags: [payments]
+      summary: Update a payment (mark as paid, etc.)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePaymentBody"
+      responses:
+        "200":
+          description: Updated payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    delete:
+      operationId: deletePayment
+      tags: [payments]
+      summary: Delete a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +370,327 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    DashboardStats:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+        activeStudents:
+          type: integer
+        totalRooms:
+          type: integer
+        availableRooms:
+          type: integer
+        occupiedRooms:
+          type: integer
+        totalPaymentsCollected:
+          type: number
+        pendingPayments:
+          type: integer
+        overduePayments:
+          type: integer
+        overdueAmount:
+          type: number
+        recentPayments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        recentStudents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Student"
+      required:
+        - totalStudents
+        - activeStudents
+        - totalRooms
+        - availableRooms
+        - occupiedRooms
+        - totalPaymentsCollected
+        - pendingPayments
+        - overduePayments
+        - overdueAmount
+        - recentPayments
+        - recentStudents
+
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        roomId:
+          type: integer
+          nullable: true
+        roomNumber:
+          type: string
+          nullable: true
+        joinDate:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        emergencyContact:
+          type: string
+          nullable: true
+        emergencyPhone:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - name
+        - email
+        - phone
+        - address
+        - joinDate
+        - status
+        - createdAt
+
+    CreateStudentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        roomId:
+          type: integer
+          nullable: true
+        joinDate:
+          type: string
+        emergencyContact:
+          type: string
+          nullable: true
+        emergencyPhone:
+          type: string
+          nullable: true
+      required:
+        - name
+        - email
+        - phone
+        - address
+        - joinDate
+
+    UpdateStudentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        roomId:
+          type: integer
+          nullable: true
+        joinDate:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive]
+        emergencyContact:
+          type: string
+          nullable: true
+        emergencyPhone:
+          type: string
+          nullable: true
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+        number:
+          type: string
+        type:
+          type: string
+          enum: [single, double, triple, dormitory]
+        floor:
+          type: integer
+        capacity:
+          type: integer
+        occupied:
+          type: integer
+        monthlyRent:
+          type: number
+        status:
+          type: string
+          enum: [available, full, maintenance]
+        amenities:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - number
+        - type
+        - floor
+        - capacity
+        - occupied
+        - monthlyRent
+        - status
+        - createdAt
+
+    RoomWithStudents:
+      allOf:
+        - $ref: "#/components/schemas/Room"
+        - type: object
+          properties:
+            students:
+              type: array
+              items:
+                $ref: "#/components/schemas/Student"
+          required:
+            - students
+
+    CreateRoomBody:
+      type: object
+      properties:
+        number:
+          type: string
+        type:
+          type: string
+          enum: [single, double, triple, dormitory]
+        floor:
+          type: integer
+        capacity:
+          type: integer
+        monthlyRent:
+          type: number
+        amenities:
+          type: string
+          nullable: true
+      required:
+        - number
+        - type
+        - floor
+        - capacity
+        - monthlyRent
+
+    UpdateRoomBody:
+      type: object
+      properties:
+        number:
+          type: string
+        type:
+          type: string
+          enum: [single, double, triple, dormitory]
+        floor:
+          type: integer
+        capacity:
+          type: integer
+        monthlyRent:
+          type: number
+        status:
+          type: string
+          enum: [available, full, maintenance]
+        amenities:
+          type: string
+          nullable: true
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        amount:
+          type: number
+        dueDate:
+          type: string
+        paidDate:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, paid, overdue]
+        description:
+          type: string
+          nullable: true
+        month:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+      required:
+        - id
+        - studentId
+        - studentName
+        - amount
+        - dueDate
+        - status
+        - createdAt
+
+    CreatePaymentBody:
+      type: object
+      properties:
+        studentId:
+          type: integer
+        amount:
+          type: number
+        dueDate:
+          type: string
+        description:
+          type: string
+          nullable: true
+        month:
+          type: string
+          nullable: true
+      required:
+        - studentId
+        - amount
+        - dueDate
+
+    UpdatePaymentBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        dueDate:
+          type: string
+        paidDate:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, paid, overdue]
+        description:
+          type: string
+          nullable: true
+        month:
+          type: string
+          nullable: true
