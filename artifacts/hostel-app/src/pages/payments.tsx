@@ -46,6 +46,84 @@ const addPaymentSchema = z.object({
   description: z.string().optional(),
 });
 
+function StudentPicker({
+  students,
+  value,
+  onChange,
+}: {
+  students: { id: number; name: string; roomNumber?: string | null; status: string }[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+
+  const activeStudents = students.filter((s) => s.status === "active");
+  const selected = activeStudents.find((s) => String(s.id) === value);
+
+  const filtered = query.trim()
+    ? activeStudents.filter((s) =>
+        s.name.toLowerCase().includes(query.trim().toLowerCase())
+      )
+    : activeStudents;
+
+  const handleSelect = (id: string) => {
+    onChange(id);
+    setQuery("");
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+        <Input
+          className="pl-9"
+          placeholder="Type student name…"
+          value={open ? query : selected ? selected.name : ""}
+          onFocus={() => { setOpen(true); setQuery(""); }}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          autoComplete="off"
+        />
+      </div>
+      {selected && !open && (
+        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+          <span className="font-medium text-foreground">{selected.name}</span>
+          {selected.roomNumber && (
+            <>
+              <span>·</span>
+              <span>Room {selected.roomNumber}</span>
+            </>
+          )}
+          {!selected.roomNumber && <span className="italic">No room assigned</span>}
+        </p>
+      )}
+      {open && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-52 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="px-3 py-2 text-sm text-muted-foreground">No students found</p>
+          ) : (
+            filtered.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className="w-full text-left px-3 py-2 text-sm hover:bg-accent flex items-center justify-between gap-2"
+                onMouseDown={() => handleSelect(String(s.id))}
+              >
+                <span className="font-medium">{s.name}</span>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {s.roomNumber ? `Room ${s.roomNumber}` : "No room"}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type AddPaymentForm = z.infer<typeof addPaymentSchema>;
 
 const statusColors: Record<string, string> = {
@@ -281,20 +359,13 @@ export default function Payments() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Student</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger data-testid="select-payment-student">
-                                  <SelectValue placeholder="Select student" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {students.filter((s) => s.status === "active").map((s) => (
-                                  <SelectItem key={s.id} value={String(s.id)}>
-                                    {s.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            <FormControl>
+                              <StudentPicker
+                                students={students}
+                                value={field.value}
+                                onChange={field.onChange}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
