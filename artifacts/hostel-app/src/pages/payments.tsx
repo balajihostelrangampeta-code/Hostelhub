@@ -230,7 +230,7 @@ export default function Payments() {
                       <FormItem>
                         <FormLabel>Description (optional)</FormLabel>
                         <FormControl>
-                          <Input {...field} data-testid="input-payment-description" placeholder="Monthly rent" />
+                          <Input {...field} data-testid="input-payment-description" placeholder="Yearly rent" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

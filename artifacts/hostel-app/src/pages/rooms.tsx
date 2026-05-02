@@ -48,7 +48,7 @@ const addRoomSchema = z.object({
   type: z.enum(["single", "double", "triple", "dormitory"]),
   floor: z.string().min(1, "Floor is required"),
   capacity: z.string().min(1, "Capacity is required"),
-  monthlyRent: z.string().min(1, "Monthly rent is required"),
+  monthlyRent: z.string().min(1, "Yearly rent is required"),
   amenities: z.string().optional(),
 });
 
@@ -219,7 +219,7 @@ export default function Rooms() {
                     name="monthlyRent"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Monthly Rent (INR)</FormLabel>
+                        <FormLabel>Yearly Rent (INR)</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-room-rent" type="number" min="0" placeholder="3500" />
                         </FormControl>
@@ -332,7 +332,7 @@ export default function Rooms() {
                 {/* Rent + amenities */}
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-semibold">
-                    ₹{room.monthlyRent.toLocaleString()}<span className="text-muted-foreground font-normal text-xs">/mo</span>
+                    ₹{room.monthlyRent.toLocaleString()}<span className="text-muted-foreground font-normal text-xs">/yr</span>
                   </p>
                   {room.amenities && (
                     <p className="text-xs text-muted-foreground truncate max-w-[55%] text-right">{room.amenities}</p>

@@ -112,7 +112,7 @@ export default function StudentDetail() {
       amount: student?.roomId ? "" : "",
       dueDate: new Date().toISOString().split("T")[0],
       month: "",
-      description: "Monthly Rent",
+      description: "Yearly Rent",
     },
   });
 
@@ -161,7 +161,7 @@ export default function StudentDetail() {
           queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey({ studentId }) });
           toast({ title: "Payment installment added" });
           setPaymentOpen(false);
-          paymentForm.reset({ amount: "", dueDate: new Date().toISOString().split("T")[0], month: "", description: "Monthly Rent" });
+          paymentForm.reset({ amount: "", dueDate: new Date().toISOString().split("T")[0], month: "", description: "Yearly Rent" });
         },
         onError: () => {
           toast({ title: "Failed to add payment", variant: "destructive" });
@@ -478,7 +478,7 @@ export default function StudentDetail() {
                     <FormField control={paymentForm.control} name="description" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Description</FormLabel>
-                        <FormControl><Input {...field} placeholder="Monthly Rent" data-testid="input-payment-description" /></FormControl>
+                        <FormControl><Input {...field} placeholder="Yearly Rent" data-testid="input-payment-description" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />

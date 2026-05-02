@@ -223,7 +223,7 @@ export default function RoomDetail() {
                     )} />
                     <FormField control={form.control} name="monthlyRent" render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Monthly Rent (INR)</FormLabel>
+                        <FormLabel>Yearly Rent (INR)</FormLabel>
                         <FormControl><Input {...field} type="number" min="0" data-testid="input-room-rent" /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -281,7 +281,7 @@ export default function RoomDetail() {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Monthly Rent</p>
+            <p className="text-xs text-muted-foreground">Yearly Rent</p>
             <p className="text-2xl font-bold mt-1">₹{room.monthlyRent.toLocaleString()}</p>
           </CardContent>
         </Card>
@@ -293,7 +293,7 @@ export default function RoomDetail() {
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">Monthly Income</p>
+            <p className="text-xs text-muted-foreground">Yearly Income</p>
             <p className="text-2xl font-bold mt-1">₹{(room.monthlyRent * room.occupied).toLocaleString()}</p>
           </CardContent>
         </Card>
