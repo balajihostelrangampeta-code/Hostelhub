@@ -3,6 +3,8 @@ import { useParams, Link, useLocation } from "wouter";
 import {
   useGetRoom,
   useUpdateRoom,
+  useUpdateStudent,
+  useListRooms,
   getGetRoomQueryKey,
   getListRoomsQueryKey,
 } from "@workspace/api-client-react";
@@ -23,7 +25,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench } from "lucide-react";
+import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench, Mail } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -31,6 +33,183 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+const editStudentSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(6, "Phone is required"),
+  address: z.string().min(1, "Address is required"),
+  joinDate: z.string().min(1, "Join date is required"),
+  status: z.enum(["active", "inactive"]),
+  roomId: z.string().optional(),
+  emergencyContact: z.string().optional(),
+  emergencyPhone: z.string().optional(),
+});
+type EditStudentForm = z.infer<typeof editStudentSchema>;
+
+type RoomStudent = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  joinDate: string;
+  status: string;
+};
+
+function StudentEditDialog({
+  student,
+  currentRoomId,
+  onSaved,
+}: {
+  student: RoomStudent;
+  currentRoomId: number;
+  onSaved: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
+  const { data: rooms = [] } = useListRooms();
+  const updateStudent = useUpdateStudent();
+
+  const form = useForm<EditStudentForm>({
+    resolver: zodResolver(editStudentSchema),
+    values: {
+      name: student.name,
+      email: student.email,
+      phone: student.phone,
+      address: "",
+      joinDate: student.joinDate,
+      status: student.status as "active" | "inactive",
+      roomId: String(currentRoomId),
+      emergencyContact: "",
+      emergencyPhone: "",
+    },
+  });
+
+  const onSubmit = (values: EditStudentForm) => {
+    updateStudent.mutate(
+      {
+        id: student.id,
+        data: {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+          joinDate: values.joinDate,
+          status: values.status,
+          roomId: values.roomId && values.roomId !== "none" ? Number(values.roomId) : null,
+          emergencyContact: values.emergencyContact || null,
+          emergencyPhone: values.emergencyPhone || null,
+        },
+      },
+      {
+        onSuccess: () => {
+          toast({ title: "Student updated successfully" });
+          setOpen(false);
+          onSaved();
+        },
+        onError: () => {
+          toast({ title: "Failed to update student", variant: "destructive" });
+        },
+      }
+    );
+  };
+
+  const availableRooms = rooms.filter(
+    (r) => r.status !== "maintenance" && (r.occupied < r.capacity || r.id === currentRoomId)
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Edit student">
+          <Edit className="w-3.5 h-3.5 text-muted-foreground" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit {student.name}</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl><Input {...field} type="email" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="address" render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>Address</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="joinDate" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Join Date</FormLabel>
+                  <FormControl><Input {...field} type="date" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="status" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="roomId" render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>Assign Room</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="No room" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No room</SelectItem>
+                      {availableRooms.map((r) => (
+                        <SelectItem key={r.id} value={String(r.id)}>
+                          Room {r.number} ({r.type}) — {r.occupied}/{r.capacity}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={updateStudent.isPending}>
+                {updateStudent.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 const editRoomSchema = z.object({
   number: z.string().min(1, "Room number is required"),
@@ -335,34 +514,57 @@ export default function RoomDetail() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {room.students.map((student) => (
               <Card key={student.id} className="hover:shadow-sm transition-shadow" data-testid={`card-student-${student.id}`}>
-                <CardContent className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <User className="w-5 h-5 text-primary" />
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+
+                    {/* Main info — takes all remaining space */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm truncate" data-testid={`text-student-name-${student.id}`}>
+                          {student.name}
+                        </p>
+                        <Badge
+                          variant={student.status === "active" ? "default" : "secondary"}
+                          className="text-[10px] px-1.5 py-0 h-4 shrink-0"
+                        >
+                          {student.status}
+                        </Badge>
                       </div>
-                      <div>
-                        <p className="font-medium" data-testid={`text-student-name-${student.id}`}>{student.name}</p>
-                        <p className="text-sm text-muted-foreground">{student.email}</p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                          <Phone className="w-3 h-3" />
-                          <span>{student.phone}</span>
-                        </div>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                          <Mail className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{student.email}</span>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Phone className="w-3 h-3 shrink-0" />
+                          {student.phone}
+                        </span>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          Since {student.joinDate}
+                        </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        <p className="text-xs text-muted-foreground">Since</p>
-                        <p className="text-sm font-medium">{student.joinDate}</p>
-                      </div>
-                      <Badge variant={student.status === "active" ? "default" : "secondary"}>
-                        {student.status}
-                      </Badge>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 shrink-0">
+                      <StudentEditDialog
+                        student={student}
+                        currentRoomId={roomId}
+                        onSaved={() => {
+                          queryClient.invalidateQueries({ queryKey: getGetRoomQueryKey(roomId) });
+                        }}
+                      />
                       <Link href={`/students/${student.id}`}>
-                        <Button variant="ghost" size="sm" data-testid={`button-view-student-${student.id}`}>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" data-testid={`button-view-student-${student.id}`}>
                           <ChevronRight className="w-4 h-4" />
                         </Button>
                       </Link>
