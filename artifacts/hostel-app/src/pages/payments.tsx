@@ -252,26 +252,24 @@ export default function Payments() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Total Billed</p>
-            <p className="text-2xl font-bold mt-1">{formatCurrency(totalAmount)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Collected</p>
-            <p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(paidAmount)}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-sm text-muted-foreground">Outstanding</p>
-            <p className="text-2xl font-bold text-destructive mt-1">{formatCurrency(totalAmount - paidAmount)}</p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <div className="grid grid-cols-3 divide-x divide-border">
+            <div className="flex flex-col gap-1 px-4 py-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Billed</p>
+              <p className="text-lg font-bold leading-tight">{formatCurrency(totalAmount)}</p>
+            </div>
+            <div className="flex flex-col gap-1 px-4 py-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Collected</p>
+              <p className="text-lg font-bold leading-tight text-green-600">{formatCurrency(paidAmount)}</p>
+            </div>
+            <div className="flex flex-col gap-1 px-4 py-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Due</p>
+              <p className="text-lg font-bold leading-tight text-destructive">{formatCurrency(totalAmount - paidAmount)}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex items-center gap-3">
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
