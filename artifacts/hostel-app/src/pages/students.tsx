@@ -286,19 +286,20 @@ export default function Students() {
         </Dialog>
       </div>
 
-      <div className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      {/* Search + filter bar */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
           <Input
             data-testid="input-search"
             className="pl-9"
-            placeholder="Search by name, email, phone..."
+            placeholder="Search by name, phone or email…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-          <SelectTrigger className="w-36" data-testid="select-status-filter">
+          <SelectTrigger className="w-full sm:w-36" data-testid="select-status-filter">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -321,68 +322,54 @@ export default function Students() {
             <User className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium">No students found</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {search ? "Try a different search term" : "Add a student to get started"}
+              {search || statusFilter !== "all" ? "Try adjusting your search or filter" : "Add a student to get started"}
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/50">
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Student</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Phone</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Room</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Join Date</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {students.map((student, idx) => (
-                <tr
-                  key={student.id}
-                  className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
-                  data-testid={`row-student-${student.id}`}
-                >
-                  <td className="px-4 py-3">
-                    <Link href={`/students/${student.id}`}>
-                      <div className="cursor-pointer">
-                        <p className="font-medium hover:text-primary transition-colors" data-testid={`text-student-name-${student.id}`}>
+        <>
+          {/* Mobile card list */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {students.map((student) => (
+              <Card key={student.id} className="hover:shadow-sm transition-shadow" data-testid={`row-student-${student.id}`}>
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-sm truncate" data-testid={`text-student-name-${student.id}`}>
                           {student.name}
                         </p>
-                        <p className="text-xs text-muted-foreground">{student.email}</p>
+                        <Badge
+                          variant={student.status === "active" ? "default" : "secondary"}
+                          className="text-[10px] px-1.5 py-0 h-4 shrink-0"
+                          data-testid={`status-student-${student.id}`}
+                        >
+                          {student.status}
+                        </Badge>
                       </div>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{student.phone}</td>
-                  <td className="px-4 py-3">
-                    {student.roomNumber ? (
-                      <span className="font-medium">Room {student.roomNumber}</span>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{student.joinDate}</td>
-                  <td className="px-4 py-3">
-                    <Badge
-                      variant={student.status === "active" ? "default" : "secondary"}
-                      data-testid={`status-student-${student.id}`}
-                    >
-                      {student.status}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                        <span className="truncate">{student.phone}</span>
+                        {student.roomNumber ? (
+                          <span className="shrink-0 font-medium text-foreground">Room {student.roomNumber}</span>
+                        ) : (
+                          <span className="shrink-0">No room</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 truncate">{student.email}</p>
+                    </div>
+                    <div className="flex items-center gap-0.5 shrink-0">
                       <Link href={`/students/${student.id}`}>
-                        <Button variant="ghost" size="sm" data-testid={`button-view-student-${student.id}`}>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" data-testid={`button-view-student-${student.id}`}>
                           <ChevronRight className="w-4 h-4" />
                         </Button>
                       </Link>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" data-testid={`button-delete-student-${student.id}`}>
-                            <Trash2 className="w-4 h-4 text-destructive" />
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0" data-testid={`button-delete-student-${student.id}`}>
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -404,15 +391,106 @@ export default function Students() {
                         </AlertDialogContent>
                       </AlertDialog>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
-            {students.length} student{students.length !== 1 ? "s" : ""} total
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+            <p className="text-xs text-muted-foreground text-center pt-1">
+              {students.length} student{students.length !== 1 ? "s" : ""}
+              {(search || statusFilter !== "all") ? " matched" : " total"}
+            </p>
           </div>
-        </div>
+
+          {/* Desktop table */}
+          <div className="hidden md:block rounded-lg border bg-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Student</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Phone</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Room</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Join Date</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((student, idx) => (
+                  <tr
+                    key={student.id}
+                    className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
+                    data-testid={`row-student-${student.id}`}
+                  >
+                    <td className="px-4 py-3">
+                      <Link href={`/students/${student.id}`}>
+                        <div className="cursor-pointer">
+                          <p className="font-medium hover:text-primary transition-colors" data-testid={`text-student-name-${student.id}`}>
+                            {student.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{student.email}</p>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{student.phone}</td>
+                    <td className="px-4 py-3">
+                      {student.roomNumber ? (
+                        <span className="font-medium">Room {student.roomNumber}</span>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{student.joinDate}</td>
+                    <td className="px-4 py-3">
+                      <Badge
+                        variant={student.status === "active" ? "default" : "secondary"}
+                        data-testid={`status-student-${student.id}`}
+                      >
+                        {student.status}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 justify-end">
+                        <Link href={`/students/${student.id}`}>
+                          <Button variant="ghost" size="sm" data-testid={`button-view-student-${student.id}`}>
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </Link>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" data-testid={`button-delete-student-${student.id}`}>
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove Student</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to remove {student.name}? All their payment records will also be deleted.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(student.id, student.name)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
+              {students.length} student{students.length !== 1 ? "s" : ""}
+              {(search || statusFilter !== "all") ? " matched" : " total"}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
