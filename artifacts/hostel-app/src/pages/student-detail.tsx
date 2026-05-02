@@ -264,22 +264,22 @@ export default function StudentDetail() {
               Edit
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Student</DialogTitle>
             </DialogHeader>
             <Form {...editForm}>
-              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={editForm.handleSubmit(onEditSubmit)} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FormField control={editForm.control} name="name" render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem className="sm:col-span-2">
                       <FormLabel>Full Name</FormLabel>
                       <FormControl><Input {...field} data-testid="input-edit-name" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
                   <FormField control={editForm.control} name="email" render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="sm:col-span-2">
                       <FormLabel>Email</FormLabel>
                       <FormControl><Input {...field} type="email" data-testid="input-edit-email" /></FormControl>
                       <FormMessage />
@@ -292,17 +292,17 @@ export default function StudentDetail() {
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={editForm.control} name="address" render={({ field }) => (
-                    <FormItem className="col-span-2">
-                      <FormLabel>Address</FormLabel>
-                      <FormControl><Input {...field} data-testid="input-edit-address" /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
                   <FormField control={editForm.control} name="joinDate" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Join Date</FormLabel>
                       <FormControl><Input {...field} type="date" data-testid="input-edit-join-date" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={editForm.control} name="address" render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>Address</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-edit-address" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )} />
@@ -322,7 +322,7 @@ export default function StudentDetail() {
                     </FormItem>
                   )} />
                   <FormField control={editForm.control} name="roomId" render={({ field }) => (
-                    <FormItem className="col-span-2">
+                    <FormItem>
                       <FormLabel>Assign Room</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
@@ -355,7 +355,7 @@ export default function StudentDetail() {
                     </FormItem>
                   )} />
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
                   <Button type="submit" disabled={updateStudent.isPending} data-testid="button-save-student">
                     {updateStudent.isPending ? "Saving..." : "Save Changes"}
@@ -449,13 +449,13 @@ export default function StudentDetail() {
                 Add Installment
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add Payment Installment for {student.name}</DialogTitle>
               </DialogHeader>
               <Form {...paymentForm}>
-                <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={paymentForm.handleSubmit(onPaymentSubmit)} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <FormField control={paymentForm.control} name="amount" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Amount (INR)</FormLabel>

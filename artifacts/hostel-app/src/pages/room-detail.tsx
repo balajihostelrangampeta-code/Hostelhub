@@ -126,22 +126,22 @@ function StudentEditDialog({
           <Edit className="w-3.5 h-3.5 text-muted-foreground" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit {student.name}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem className="col-span-2">
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Full Name</FormLabel>
                   <FormControl><Input {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Email</FormLabel>
                   <FormControl><Input {...field} type="email" /></FormControl>
                   <FormMessage />
@@ -154,17 +154,17 @@ function StudentEditDialog({
                   <FormMessage />
                 </FormItem>
               )} />
-              <FormField control={form.control} name="address" render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>Address</FormLabel>
-                  <FormControl><Input {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
               <FormField control={form.control} name="joinDate" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Join Date</FormLabel>
                   <FormControl><Input {...field} type="date" /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="address" render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Address</FormLabel>
+                  <FormControl><Input {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -182,7 +182,7 @@ function StudentEditDialog({
                 </FormItem>
               )} />
               <FormField control={form.control} name="roomId" render={({ field }) => (
-                <FormItem className="col-span-2">
+                <FormItem>
                   <FormLabel>Assign Room</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="No room" /></SelectTrigger></FormControl>
@@ -467,13 +467,13 @@ export default function RoomDetail() {
                 Edit Room
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Edit Room {room.number}</DialogTitle>
               </DialogHeader>
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                <form onSubmit={form.handleSubmit(onEditSubmit)} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <FormField control={form.control} name="number" render={({ field }) => (
                       <FormItem>
                         <FormLabel>Room Number</FormLabel>
@@ -536,14 +536,14 @@ export default function RoomDetail() {
                       </FormItem>
                     )} />
                     <FormField control={form.control} name="amenities" render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Amenities</FormLabel>
                         <FormControl><Input {...field} placeholder="AC, WiFi, Attached Bathroom" data-testid="input-room-amenities" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )} />
                   </div>
-                  <div className="flex justify-end gap-2 pt-2">
+                  <div className="flex justify-end gap-2 pt-1">
                     <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
                     <Button type="submit" disabled={updateRoom.isPending} data-testid="button-save-room">
                       {updateRoom.isPending ? "Saving..." : "Save Changes"}

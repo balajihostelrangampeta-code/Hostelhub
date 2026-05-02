@@ -148,18 +148,18 @@ export default function Students() {
               Add Student
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Student</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="name"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Full Name</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-name" placeholder="John Doe" />
@@ -172,7 +172,7 @@ export default function Students() {
                     control={form.control}
                     name="email"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Email</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-email" type="email" placeholder="john@email.com" />
@@ -196,19 +196,6 @@ export default function Students() {
                   />
                   <FormField
                     control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem className="col-span-2">
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Input {...field} data-testid="input-address" placeholder="Street, City" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
                     name="joinDate"
                     render={({ field }) => (
                       <FormItem>
@@ -222,9 +209,22 @@ export default function Students() {
                   />
                   <FormField
                     control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} data-testid="input-address" placeholder="Street, City" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
                     name="roomId"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Assign Room (optional)</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
@@ -272,7 +272,7 @@ export default function Students() {
                     )}
                   />
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>

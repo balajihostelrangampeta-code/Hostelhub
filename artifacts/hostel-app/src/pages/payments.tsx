@@ -185,12 +185,12 @@ export default function Payments() {
               Add Installment
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add Payment Installment</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                 <FormField
                   control={form.control}
                   name="studentId"
@@ -215,7 +215,7 @@ export default function Payments() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="amount"

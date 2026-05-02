@@ -145,13 +145,13 @@ export default function Rooms() {
               Add Room
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Room</DialogTitle>
             </DialogHeader>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FormField
                     control={form.control}
                     name="number"
@@ -218,7 +218,7 @@ export default function Rooms() {
                     control={form.control}
                     name="monthlyRent"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Yearly Rent (INR)</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-room-rent" type="number" min="0" placeholder="3500" />
@@ -231,7 +231,7 @@ export default function Rooms() {
                     control={form.control}
                     name="amenities"
                     render={({ field }) => (
-                      <FormItem className="col-span-2">
+                      <FormItem className="sm:col-span-2">
                         <FormLabel>Amenities (optional)</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-room-amenities" placeholder="AC, WiFi, Attached Bathroom" />
@@ -241,7 +241,7 @@ export default function Rooms() {
                     )}
                   />
                 </div>
-                <div className="flex justify-end gap-2 pt-2">
+                <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
