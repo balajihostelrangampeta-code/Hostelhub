@@ -5,6 +5,8 @@ import {
   useCreateStudent,
   useDeleteStudent,
   getListStudentsQueryKey,
+  useCreatePayment,
+  getListPaymentsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -12,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -34,7 +38,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Trash2, ChevronRight, User } from "lucide-react";
+import { Plus, Search, Trash2, ChevronRight, User, CreditCard } from "lucide-react";
 import { useListRooms } from "@workspace/api-client-react";
 import {
   Select,
@@ -53,6 +57,10 @@ const addStudentSchema = z.object({
   roomId: z.string().optional(),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
+  addFirstPayment: z.boolean().optional(),
+  paymentAmount: z.string().optional(),
+  paymentDueDate: z.string().optional(),
+  paymentMonth: z.string().optional(),
 });
 
 type AddStudentForm = z.infer<typeof addStudentSchema>;
@@ -73,6 +81,7 @@ export default function Students() {
   );
   const { data: rooms = [] } = useListRooms();
   const createStudent = useCreateStudent();
+  const createPayment = useCreatePayment();
   const deleteStudent = useDeleteStudent();
 
   const form = useForm<AddStudentForm>({
@@ -86,12 +95,18 @@ export default function Students() {
       roomId: "",
       emergencyContact: "",
       emergencyPhone: "",
+      addFirstPayment: false,
+      paymentAmount: "",
+      paymentDueDate: new Date().toISOString().split("T")[0],
+      paymentMonth: "",
     },
   });
 
-  const onSubmit = (values: AddStudentForm) => {
-    createStudent.mutate(
-      {
+  const watchAddPayment = form.watch("addFirstPayment");
+
+  const onSubmit = async (values: AddStudentForm) => {
+    try {
+      const newStudent = await createStudent.mutateAsync({
         data: {
           name: values.name,
           email: values.email,
@@ -102,19 +117,28 @@ export default function Students() {
           emergencyContact: values.emergencyContact || null,
           emergencyPhone: values.emergencyPhone || null,
         },
-      },
-      {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
-          toast({ title: "Student added successfully" });
-          setOpen(false);
-          form.reset();
-        },
-        onError: () => {
-          toast({ title: "Failed to add student", variant: "destructive" });
-        },
+      });
+
+      if (values.addFirstPayment && values.paymentAmount && values.paymentDueDate) {
+        await createPayment.mutateAsync({
+          data: {
+            studentId: newStudent.id,
+            amount: Number(values.paymentAmount),
+            dueDate: values.paymentDueDate,
+            month: values.paymentMonth || null,
+            status: "pending",
+          },
+        });
+        queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey() });
       }
-    );
+
+      queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
+      toast({ title: "Student added successfully" });
+      setOpen(false);
+      form.reset();
+    } catch {
+      toast({ title: "Failed to add student", variant: "destructive" });
+    }
   };
 
   const handleDelete = (id: number, name: string) => {
@@ -272,12 +296,83 @@ export default function Students() {
                     )}
                   />
                 </div>
+
+                {/* First Payment Section */}
+                <Separator />
+                <FormField
+                  control={form.control}
+                  name="addFirstPayment"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2.5">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-add-payment"
+                        />
+                      </FormControl>
+                      <div className="flex items-center gap-1.5">
+                        <CreditCard className="w-4 h-4 text-muted-foreground" />
+                        <FormLabel className="!mt-0 cursor-pointer font-medium">Add first payment installment</FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {watchAddPayment && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-lg border bg-muted/30 p-3">
+                    <FormField
+                      control={form.control}
+                      name="paymentAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount (INR) <span className="text-destructive">*</span></FormLabel>
+                          <FormControl>
+                            <Input {...field} type="number" min="0" placeholder="3500" data-testid="input-payment-amount" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="paymentDueDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Due Date <span className="text-destructive">*</span></FormLabel>
+                          <FormControl>
+                            <Input {...field} type="date" data-testid="input-payment-due-date" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="paymentMonth"
+                      render={({ field }) => (
+                        <FormItem className="sm:col-span-2">
+                          <FormLabel>Month / Period <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                          <FormControl>
+                            <Input {...field} placeholder="e.g. May 2026" data-testid="input-payment-month" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+
                 <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={createStudent.isPending} data-testid="button-submit-student">
-                    {createStudent.isPending ? "Adding..." : "Add Student"}
+                  <Button
+                    type="submit"
+                    disabled={createStudent.isPending || createPayment.isPending}
+                    data-testid="button-submit-student"
+                  >
+                    {createStudent.isPending || createPayment.isPending ? "Adding..." : "Add Student"}
                   </Button>
                 </div>
               </form>

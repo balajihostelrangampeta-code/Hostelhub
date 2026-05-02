@@ -34,7 +34,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Home, Trash2, Users, Wrench } from "lucide-react";
+import { Plus, Home, Trash2, Users, Wrench, Search } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -69,12 +69,23 @@ const typeLabels: Record<string, string> = {
 
 export default function Rooms() {
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "full" | "maintenance">("all");
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const params = statusFilter !== "all" ? { status: statusFilter } : undefined;
-  const { data: rooms = [], isLoading } = useListRooms(params);
+  const { data: allRooms = [], isLoading } = useListRooms(params);
+
+  const q = search.toLowerCase().trim();
+  const rooms = q
+    ? allRooms.filter(
+        (r) =>
+          r.number.toLowerCase().includes(q) ||
+          r.type.toLowerCase().includes(q) ||
+          String(r.floor).includes(q)
+      )
+    : allRooms;
   const createRoom = useCreateRoom();
   const deleteRoom = useDeleteRoom();
 
@@ -255,20 +266,32 @@ export default function Rooms() {
         </Dialog>
       </div>
 
-      <div className="flex gap-3">
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-          <SelectTrigger className="w-44" data-testid="select-room-filter">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Rooms</SelectItem>
-            <SelectItem value="available">Available</SelectItem>
-            <SelectItem value="full">Full</SelectItem>
-            <SelectItem value="maintenance">Maintenance</SelectItem>
-          </SelectContent>
-        </Select>
-        <div className="text-sm text-muted-foreground flex items-center">
-          {rooms.length} room{rooms.length !== 1 ? "s" : ""}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Input
+            className="pl-9"
+            placeholder="Search by room number, type or floor..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-room-search"
+          />
+        </div>
+        <div className="flex gap-2 items-center">
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+            <SelectTrigger className="w-44" data-testid="select-room-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Rooms</SelectItem>
+              <SelectItem value="available">Available</SelectItem>
+              <SelectItem value="full">Full</SelectItem>
+              <SelectItem value="maintenance">Maintenance</SelectItem>
+            </SelectContent>
+          </Select>
+          <div className="text-sm text-muted-foreground whitespace-nowrap">
+            {rooms.length} room{rooms.length !== 1 ? "s" : ""}
+          </div>
         </div>
       </div>
 
