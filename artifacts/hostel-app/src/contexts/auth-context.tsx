@@ -7,7 +7,7 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (username: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  login: (username: string, password: string, rememberMe?: boolean) => Promise<{ ok: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -35,13 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string, rememberMe = false) => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, rememberMe }),
       });
       const data = await res.json() as { ok?: boolean; username?: string; error?: string };
       if (res.ok && data.ok) {

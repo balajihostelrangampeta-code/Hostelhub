@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff, Lock } from "lucide-react";
 
 export default function Login() {
@@ -11,6 +12,7 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +20,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const result = await login(username, password);
+    const result = await login(username, password, rememberMe);
     setLoading(false);
     if (!result.ok) {
       setError(result.error ?? "Invalid credentials");
@@ -85,6 +87,19 @@ export default function Login() {
                 </div>
               </div>
 
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="remember-me"
+                  checked={rememberMe}
+                  onCheckedChange={(v) => setRememberMe(Boolean(v))}
+                  disabled={loading}
+                  data-testid="checkbox-remember-me"
+                />
+                <Label htmlFor="remember-me" className="text-sm font-normal cursor-pointer select-none">
+                  Keep me signed in for 30 days
+                </Label>
+              </div>
+
               {error && (
                 <p className="text-sm text-destructive font-medium" data-testid="login-error">
                   {error}
@@ -102,6 +117,10 @@ export default function Login() {
             </form>
           </CardContent>
         </Card>
+
+        <p className="text-center text-xs text-muted-foreground">
+          {rememberMe ? "Session lasts 30 days" : "Session lasts 30 minutes"}
+        </p>
       </div>
     </div>
   );
