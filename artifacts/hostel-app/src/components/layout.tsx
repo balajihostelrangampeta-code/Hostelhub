@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Users, Home, CreditCard } from "lucide-react";
+import { LayoutDashboard, Users, Home, CreditCard, LogOut } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -11,6 +13,7 @@ const navItems = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const { logout, username } = useAuth();
 
   const isActive = (href: string) =>
     href === "/" ? location === "/" || location === "/dashboard" : location.startsWith(href);
@@ -33,6 +36,20 @@ export function Layout({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
+        <div className="sidebar-footer">
+          <div className="sidebar-user">
+            <span className="sidebar-username">{username}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={logout}
+              className="sidebar-logout"
+              title="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </aside>
 
       {/* Main content */}
@@ -40,6 +57,15 @@ export function Layout({ children }: { children: ReactNode }) {
         {/* Mobile top header */}
         <header className="mobile-header">
           <h1 className="mobile-title">HostelHub</h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="mobile-logout"
+            title="Sign out"
+          >
+            <LogOut className="w-4 h-4 text-muted-foreground" />
+          </Button>
         </header>
 
         <main className="page-content">
