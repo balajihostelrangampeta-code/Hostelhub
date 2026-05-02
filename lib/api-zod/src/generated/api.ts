@@ -54,6 +54,8 @@ export const GetDashboardStatsResponse = zod.object({
       status: zod.enum(["active", "inactive"]),
       emergencyContact: zod.string().nullish(),
       emergencyPhone: zod.string().nullish(),
+      education: zod.string().nullish(),
+      studyYear: zod.string().nullish(),
       createdAt: zod.string(),
     }),
   ),
@@ -80,6 +82,8 @@ export const ListStudentsResponseItem = zod.object({
   status: zod.enum(["active", "inactive"]),
   emergencyContact: zod.string().nullish(),
   emergencyPhone: zod.string().nullish(),
+  education: zod.string().nullish(),
+  studyYear: zod.string().nullish(),
   createdAt: zod.string(),
 });
 export const ListStudentsResponse = zod.array(ListStudentsResponseItem);
@@ -96,6 +100,8 @@ export const CreateStudentBody = zod.object({
   joinDate: zod.string(),
   emergencyContact: zod.string().nullish(),
   emergencyPhone: zod.string().nullish(),
+  education: zod.string().nullish(),
+  studyYear: zod.string().nullish(),
 });
 
 /**
@@ -117,6 +123,8 @@ export const GetStudentResponse = zod.object({
   status: zod.enum(["active", "inactive"]),
   emergencyContact: zod.string().nullish(),
   emergencyPhone: zod.string().nullish(),
+  education: zod.string().nullish(),
+  studyYear: zod.string().nullish(),
   createdAt: zod.string(),
 });
 
@@ -137,6 +145,8 @@ export const UpdateStudentBody = zod.object({
   status: zod.enum(["active", "inactive"]).optional(),
   emergencyContact: zod.string().nullish(),
   emergencyPhone: zod.string().nullish(),
+  education: zod.string().nullish(),
+  studyYear: zod.string().nullish(),
 });
 
 export const UpdateStudentResponse = zod.object({
@@ -151,6 +161,8 @@ export const UpdateStudentResponse = zod.object({
   status: zod.enum(["active", "inactive"]),
   emergencyContact: zod.string().nullish(),
   emergencyPhone: zod.string().nullish(),
+  education: zod.string().nullish(),
+  studyYear: zod.string().nullish(),
   createdAt: zod.string(),
 });
 
@@ -233,6 +245,8 @@ export const GetRoomResponse = zod
           status: zod.enum(["active", "inactive"]),
           emergencyContact: zod.string().nullish(),
           emergencyPhone: zod.string().nullish(),
+          education: zod.string().nullish(),
+          studyYear: zod.string().nullish(),
           createdAt: zod.string(),
         }),
       ),

@@ -19,5 +19,7 @@ export interface Student {
   status: StudentStatus;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
   createdAt: string;
 }

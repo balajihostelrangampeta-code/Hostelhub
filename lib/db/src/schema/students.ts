@@ -14,6 +14,8 @@ export const studentsTable = pgTable("students", {
   status: text("status").notNull().default("active"),
   emergencyContact: text("emergency_contact"),
   emergencyPhone: text("emergency_phone"),
+  education: text("education"),
+  studyYear: text("study_year"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

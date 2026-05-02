@@ -57,6 +57,8 @@ const addStudentSchema = z.object({
   roomId: z.string().optional(),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
+  education: z.string().optional(),
+  studyYear: z.string().optional(),
   addFirstPayment: z.boolean().optional(),
   paymentAmount: z.string().optional(),
   paymentDueDate: z.string().optional(),
@@ -95,6 +97,8 @@ export default function Students() {
       roomId: "",
       emergencyContact: "",
       emergencyPhone: "",
+      education: "",
+      studyYear: "",
       addFirstPayment: false,
       paymentAmount: "",
       paymentDueDate: new Date().toISOString().split("T")[0],
@@ -116,6 +120,8 @@ export default function Students() {
           roomId: values.roomId && values.roomId !== "none" ? Number(values.roomId) : null,
           emergencyContact: values.emergencyContact || null,
           emergencyPhone: values.emergencyPhone || null,
+          education: values.education || null,
+          studyYear: values.studyYear || null,
         },
       });
 
@@ -290,6 +296,32 @@ export default function Students() {
                         <FormLabel>Emergency Phone</FormLabel>
                         <FormControl>
                           <Input {...field} data-testid="input-emergency-phone" placeholder="9876543200" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="education"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Education <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="B.Tech, B.Sc…" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="studyYear"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Study Year <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="1st Year, 2nd Year…" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

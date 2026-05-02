@@ -222,6 +222,8 @@ const newStudentSchema = z.object({
   joinDate: z.string().min(1, "Join date is required"),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
+  education: z.string().optional(),
+  studyYear: z.string().optional(),
 });
 type NewStudentForm = z.infer<typeof newStudentSchema>;
 
@@ -261,6 +263,8 @@ function AssignStudentDialog({
       joinDate: new Date().toISOString().split("T")[0],
       emergencyContact: "",
       emergencyPhone: "",
+      education: "",
+      studyYear: "",
     },
   });
 
@@ -302,6 +306,8 @@ function AssignStudentDialog({
           roomId,
           emergencyContact: values.emergencyContact || null,
           emergencyPhone: values.emergencyPhone || null,
+          education: values.education || null,
+          studyYear: values.studyYear || null,
         },
       });
       queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
@@ -450,6 +456,20 @@ function AssignStudentDialog({
                   <FormItem>
                     <FormLabel>Emergency Phone <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
                     <FormControl><Input {...field} placeholder="9876543200" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="education" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Education <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                    <FormControl><Input {...field} placeholder="B.Tech, B.Sc…" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="studyYear" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Study Year <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                    <FormControl><Input {...field} placeholder="1st Year, 2nd Year…" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

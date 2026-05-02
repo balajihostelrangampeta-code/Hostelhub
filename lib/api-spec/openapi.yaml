@@ -458,6 +458,12 @@ components:
         emergencyPhone:
           type: string
           nullable: true
+        education:
+          type: string
+          nullable: true
+        studyYear:
+          type: string
+          nullable: true
         createdAt:
           type: string
       required:
@@ -492,6 +498,12 @@ components:
         emergencyPhone:
           type: string
           nullable: true
+        education:
+          type: string
+          nullable: true
+        studyYear:
+          type: string
+          nullable: true
       required:
         - name
         - email
@@ -522,6 +534,12 @@ components:
           type: string
           nullable: true
         emergencyPhone:
+          type: string
+          nullable: true
+        education:
+          type: string
+          nullable: true
+        studyYear:
           type: string
           nullable: true
 

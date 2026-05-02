@@ -48,6 +48,8 @@ const editStudentSchema = z.object({
   roomId: z.string().optional(),
   emergencyContact: z.string().optional(),
   emergencyPhone: z.string().optional(),
+  education: z.string().optional(),
+  studyYear: z.string().optional(),
 });
 
 const addPaymentSchema = z.object({
@@ -102,6 +104,8 @@ export default function StudentDetail() {
           roomId: student.roomId ? String(student.roomId) : "none",
           emergencyContact: student.emergencyContact ?? "",
           emergencyPhone: student.emergencyPhone ?? "",
+          education: student.education ?? "",
+          studyYear: student.studyYear ?? "",
         }
       : undefined,
   });
@@ -130,6 +134,8 @@ export default function StudentDetail() {
           roomId: values.roomId && values.roomId !== "none" ? Number(values.roomId) : null,
           emergencyContact: values.emergencyContact || null,
           emergencyPhone: values.emergencyPhone || null,
+          education: values.education || null,
+          studyYear: values.studyYear || null,
         },
       },
       {
@@ -354,6 +360,20 @@ export default function StudentDetail() {
                       <FormMessage />
                     </FormItem>
                   )} />
+                  <FormField control={editForm.control} name="education" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Education <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                      <FormControl><Input {...field} placeholder="B.Tech, B.Sc…" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={editForm.control} name="studyYear" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Study Year <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                      <FormControl><Input {...field} placeholder="1st Year, 2nd Year…" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
@@ -412,6 +432,22 @@ export default function StudentDetail() {
               <span className="text-muted-foreground">Join Date:</span>
               <span className="font-medium">{student.joinDate}</span>
             </div>
+            {(student.education || student.studyYear) && (
+              <div className="pt-2 border-t space-y-1">
+                {student.education && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Education:</span>
+                    <span className="font-medium">{student.education}</span>
+                  </div>
+                )}
+                {student.studyYear && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Study Year:</span>
+                    <span className="font-medium">{student.studyYear}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -57,6 +57,8 @@ export interface Student {
   status: StudentStatus;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
   createdAt: string;
 }
 
@@ -83,6 +85,8 @@ export interface CreateStudentBody {
   joinDate: string;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
 }
 
 export type UpdateStudentBodyStatus =
@@ -103,6 +107,8 @@ export interface UpdateStudentBody {
   status?: UpdateStudentBodyStatus;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
 }
 
 export type RoomType = (typeof RoomType)[keyof typeof RoomType];

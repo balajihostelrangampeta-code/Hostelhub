@@ -17,4 +17,6 @@ export interface UpdateStudentBody {
   status?: UpdateStudentBodyStatus;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
 }

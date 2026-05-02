@@ -15,4 +15,6 @@ export interface CreateStudentBody {
   joinDate: string;
   emergencyContact?: string | null;
   emergencyPhone?: string | null;
+  education?: string | null;
+  studyYear?: string | null;
 }
