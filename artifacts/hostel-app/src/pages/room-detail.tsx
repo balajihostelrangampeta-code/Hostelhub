@@ -224,6 +224,7 @@ const newStudentSchema = z.object({
   emergencyPhone: z.string().optional(),
   education: z.string().optional(),
   studyYear: z.string().optional(),
+  finalInstallmentDate: z.string().optional(),
 });
 type NewStudentForm = z.infer<typeof newStudentSchema>;
 
@@ -265,6 +266,7 @@ function AssignStudentDialog({
       emergencyPhone: "",
       education: "",
       studyYear: "",
+      finalInstallmentDate: "",
     },
   });
 
@@ -308,6 +310,7 @@ function AssignStudentDialog({
           emergencyPhone: values.emergencyPhone || null,
           education: values.education || null,
           studyYear: values.studyYear || null,
+          finalInstallmentDate: values.finalInstallmentDate || null,
         },
       });
       queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
@@ -470,6 +473,13 @@ function AssignStudentDialog({
                   <FormItem>
                     <FormLabel>Study Year <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
                     <FormControl><Input {...field} placeholder="1st Year, 2nd Year…" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="finalInstallmentDate" render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Final Installment Date <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                    <FormControl><Input {...field} type="date" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />

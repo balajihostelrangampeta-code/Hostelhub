@@ -59,6 +59,7 @@ const addStudentSchema = z.object({
   emergencyPhone: z.string().optional(),
   education: z.string().optional(),
   studyYear: z.string().optional(),
+  finalInstallmentDate: z.string().optional(),
   addFirstPayment: z.boolean().optional(),
   paymentAmount: z.string().optional(),
   paymentDueDate: z.string().optional(),
@@ -95,6 +96,7 @@ export default function Students() {
       emergencyPhone: "",
       education: "",
       studyYear: "",
+      finalInstallmentDate: "",
       addFirstPayment: false,
       paymentAmount: "",
       paymentDueDate: new Date().toISOString().split("T")[0],
@@ -118,6 +120,7 @@ export default function Students() {
           emergencyPhone: values.emergencyPhone || null,
           education: values.education || null,
           studyYear: values.studyYear || null,
+          finalInstallmentDate: values.finalInstallmentDate || null,
         },
       });
 
@@ -367,6 +370,19 @@ export default function Students() {
                         <FormLabel>Study Year <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
                         <FormControl>
                           <Input {...field} placeholder="1st Year, 2nd Year…" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="finalInstallmentDate"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>Final Installment Date <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                        <FormControl>
+                          <Input {...field} type="date" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

@@ -56,6 +56,7 @@ export const GetDashboardStatsResponse = zod.object({
       emergencyPhone: zod.string().nullish(),
       education: zod.string().nullish(),
       studyYear: zod.string().nullish(),
+      finalInstallmentDate: zod.string().nullish(),
       createdAt: zod.string(),
     }),
   ),
@@ -84,6 +85,7 @@ export const ListStudentsResponseItem = zod.object({
   emergencyPhone: zod.string().nullish(),
   education: zod.string().nullish(),
   studyYear: zod.string().nullish(),
+  finalInstallmentDate: zod.string().nullish(),
   createdAt: zod.string(),
 });
 export const ListStudentsResponse = zod.array(ListStudentsResponseItem);
@@ -102,6 +104,7 @@ export const CreateStudentBody = zod.object({
   emergencyPhone: zod.string().nullish(),
   education: zod.string().nullish(),
   studyYear: zod.string().nullish(),
+  finalInstallmentDate: zod.string().nullish(),
 });
 
 /**
@@ -125,6 +128,7 @@ export const GetStudentResponse = zod.object({
   emergencyPhone: zod.string().nullish(),
   education: zod.string().nullish(),
   studyYear: zod.string().nullish(),
+  finalInstallmentDate: zod.string().nullish(),
   createdAt: zod.string(),
 });
 
@@ -147,6 +151,7 @@ export const UpdateStudentBody = zod.object({
   emergencyPhone: zod.string().nullish(),
   education: zod.string().nullish(),
   studyYear: zod.string().nullish(),
+  finalInstallmentDate: zod.string().nullish(),
 });
 
 export const UpdateStudentResponse = zod.object({
@@ -163,6 +168,7 @@ export const UpdateStudentResponse = zod.object({
   emergencyPhone: zod.string().nullish(),
   education: zod.string().nullish(),
   studyYear: zod.string().nullish(),
+  finalInstallmentDate: zod.string().nullish(),
   createdAt: zod.string(),
 });
 
@@ -247,6 +253,7 @@ export const GetRoomResponse = zod
           emergencyPhone: zod.string().nullish(),
           education: zod.string().nullish(),
           studyYear: zod.string().nullish(),
+          finalInstallmentDate: zod.string().nullish(),
           createdAt: zod.string(),
         }),
       ),

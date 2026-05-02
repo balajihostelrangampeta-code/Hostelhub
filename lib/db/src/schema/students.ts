@@ -16,6 +16,7 @@ export const studentsTable = pgTable("students", {
   emergencyPhone: text("emergency_phone"),
   education: text("education"),
   studyYear: text("study_year"),
+  finalInstallmentDate: text("final_installment_date"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

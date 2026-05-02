@@ -464,6 +464,9 @@ components:
         studyYear:
           type: string
           nullable: true
+        finalInstallmentDate:
+          type: string
+          nullable: true
         createdAt:
           type: string
       required:
@@ -504,6 +507,9 @@ components:
         studyYear:
           type: string
           nullable: true
+        finalInstallmentDate:
+          type: string
+          nullable: true
       required:
         - name
         - email
@@ -540,6 +546,9 @@ components:
           type: string
           nullable: true
         studyYear:
+          type: string
+          nullable: true
+        finalInstallmentDate:
           type: string
           nullable: true
 

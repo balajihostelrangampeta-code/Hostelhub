@@ -40,6 +40,7 @@ router.get("/students", async (req, res) => {
         emergencyPhone: studentsTable.emergencyPhone,
         education: studentsTable.education,
         studyYear: studentsTable.studyYear,
+        finalInstallmentDate: studentsTable.finalInstallmentDate,
         createdAt: studentsTable.createdAt,
       })
       .from(studentsTable)
@@ -74,6 +75,7 @@ router.post("/students", async (req, res) => {
         emergencyPhone: body.emergencyPhone ?? null,
         education: body.education ?? null,
         studyYear: body.studyYear ?? null,
+        finalInstallmentDate: body.finalInstallmentDate ?? null,
       })
       .returning();
 
@@ -100,6 +102,7 @@ router.post("/students", async (req, res) => {
         emergencyPhone: studentsTable.emergencyPhone,
         education: studentsTable.education,
         studyYear: studentsTable.studyYear,
+        finalInstallmentDate: studentsTable.finalInstallmentDate,
         createdAt: studentsTable.createdAt,
       })
       .from(studentsTable)
@@ -131,6 +134,7 @@ router.get("/students/:id", async (req, res) => {
         emergencyPhone: studentsTable.emergencyPhone,
         education: studentsTable.education,
         studyYear: studentsTable.studyYear,
+        finalInstallmentDate: studentsTable.finalInstallmentDate,
         createdAt: studentsTable.createdAt,
       })
       .from(studentsTable)
@@ -167,6 +171,7 @@ router.put("/students/:id", async (req, res) => {
     if (body.emergencyPhone !== undefined) updateData.emergencyPhone = body.emergencyPhone;
     if (body.education !== undefined) updateData.education = body.education;
     if (body.studyYear !== undefined) updateData.studyYear = body.studyYear;
+    if (body.finalInstallmentDate !== undefined) updateData.finalInstallmentDate = body.finalInstallmentDate;
     if (body.roomId !== undefined) updateData.roomId = body.roomId;
 
     await db.update(studentsTable).set(updateData).where(eq(studentsTable.id, id));
@@ -203,6 +208,7 @@ router.put("/students/:id", async (req, res) => {
         emergencyPhone: studentsTable.emergencyPhone,
         education: studentsTable.education,
         studyYear: studentsTable.studyYear,
+        finalInstallmentDate: studentsTable.finalInstallmentDate,
         createdAt: studentsTable.createdAt,
       })
       .from(studentsTable)

@@ -50,6 +50,7 @@ const editStudentSchema = z.object({
   emergencyPhone: z.string().optional(),
   education: z.string().optional(),
   studyYear: z.string().optional(),
+  finalInstallmentDate: z.string().optional(),
 });
 
 const addPaymentSchema = z.object({
@@ -106,6 +107,7 @@ export default function StudentDetail() {
           emergencyPhone: student.emergencyPhone ?? "",
           education: student.education ?? "",
           studyYear: student.studyYear ?? "",
+          finalInstallmentDate: student.finalInstallmentDate ?? "",
         }
       : undefined,
   });
@@ -136,6 +138,7 @@ export default function StudentDetail() {
           emergencyPhone: values.emergencyPhone || null,
           education: values.education || null,
           studyYear: values.studyYear || null,
+          finalInstallmentDate: values.finalInstallmentDate || null,
         },
       },
       {
@@ -374,6 +377,13 @@ export default function StudentDetail() {
                       <FormMessage />
                     </FormItem>
                   )} />
+                  <FormField control={editForm.control} name="finalInstallmentDate" render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>Final Installment Date <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                      <FormControl><Input {...field} type="date" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
                 <div className="flex justify-end gap-2 pt-1">
                   <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
@@ -432,7 +442,7 @@ export default function StudentDetail() {
               <span className="text-muted-foreground">Join Date:</span>
               <span className="font-medium">{student.joinDate}</span>
             </div>
-            {(student.education || student.studyYear) && (
+            {(student.education || student.studyYear || student.finalInstallmentDate) && (
               <div className="pt-2 border-t space-y-1">
                 {student.education && (
                   <div className="flex items-center gap-2">
@@ -444,6 +454,12 @@ export default function StudentDetail() {
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Study Year:</span>
                     <span className="font-medium">{student.studyYear}</span>
+                  </div>
+                )}
+                {student.finalInstallmentDate && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground">Final Installment Date:</span>
+                    <span className="font-medium">{student.finalInstallmentDate}</span>
                   </div>
                 )}
               </div>
