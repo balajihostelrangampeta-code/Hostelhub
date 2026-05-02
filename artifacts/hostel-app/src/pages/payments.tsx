@@ -24,7 +24,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, CreditCard, CheckCircle, Trash2 } from "lucide-react";
+import { Plus, CreditCard, CheckCircle, Trash2, Search, User } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -53,6 +53,7 @@ const statusColors: Record<string, string> = {
 
 export default function Payments() {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid" | "overdue">("all");
+  const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -135,6 +136,12 @@ export default function Payments() {
       }
     );
   };
+
+  const filtered = search.trim()
+    ? payments.filter((p) =>
+        p.studentName?.toLowerCase().includes(search.trim().toLowerCase())
+      )
+    : payments;
 
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
   const paidAmount = payments.filter((p) => p.status === "paid").reduce((sum, p) => sum + p.amount, 0);
@@ -271,9 +278,20 @@ export default function Payments() {
         </CardContent>
       </Card>
 
-      <div className="flex items-center gap-3">
+      {/* Search + filter bar */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+          <Input
+            className="pl-9"
+            placeholder="Search by student name…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            data-testid="input-payment-search"
+          />
+        </div>
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-          <SelectTrigger className="w-40" data-testid="select-payment-filter">
+          <SelectTrigger className="w-full sm:w-40" data-testid="select-payment-filter">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -283,7 +301,6 @@ export default function Payments() {
             <SelectItem value="overdue">Overdue</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-sm text-muted-foreground">{payments.length} record{payments.length !== 1 ? "s" : ""}</span>
       </div>
 
       {isLoading ? (
@@ -292,63 +309,63 @@ export default function Payments() {
             <Card key={i} className="animate-pulse h-16" />
           ))}
         </div>
-      ) : payments.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <CreditCard className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium">No payments found</p>
-            <p className="text-sm text-muted-foreground mt-1">Add an installment to get started</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {search || statusFilter !== "all" ? "Try adjusting your search or filter" : "Add an installment to get started"}
+            </p>
           </CardContent>
         </Card>
       ) : (
         <>
           {/* Mobile card list */}
-          <div className="flex flex-col gap-3 md:hidden">
-            {payments.map((payment) => (
-              <Card key={payment.id} data-testid={`row-payment-${payment.id}`}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <Link href={`/students/${payment.studentId}`}>
-                        <span className="font-semibold hover:text-primary cursor-pointer transition-colors block truncate">
-                          {payment.studentName}
+          <div className="flex flex-col gap-2 md:hidden">
+            {filtered.map((payment) => (
+              <Card key={payment.id} className="hover:shadow-sm transition-shadow" data-testid={`row-payment-${payment.id}`}>
+                <CardContent className="p-3">
+                  <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+
+                    {/* Main info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/students/${payment.studentId}`}>
+                          <span className="font-semibold text-sm truncate hover:text-primary cursor-pointer transition-colors">
+                            {payment.studentName}
+                          </span>
+                        </Link>
+                        <span
+                          className={`text-[10px] font-medium px-1.5 py-0 h-4 inline-flex items-center rounded-full border shrink-0 ${statusColors[payment.status] || ""}`}
+                          data-testid={`status-payment-${payment.id}`}
+                        >
+                          {payment.status}
                         </span>
-                      </Link>
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        {payment.description || payment.month || "—"}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full border ${statusColors[payment.status] || ""}`}
-                        data-testid={`status-payment-${payment.id}`}
-                      >
-                        {payment.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="flex gap-4 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Amount</p>
-                        <p className="font-bold">{formatCurrency(payment.amount)}</p>
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Due</p>
-                        <p className="font-medium">{payment.dueDate}</p>
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                        <span className="font-bold text-foreground">{formatCurrency(payment.amount)}</span>
+                        <span>Due {payment.dueDate}</span>
+                        {payment.paidDate && <span className="text-green-600">Paid {payment.paidDate}</span>}
                       </div>
-                      {payment.paidDate && (
-                        <div>
-                          <p className="text-xs text-muted-foreground">Paid</p>
-                          <p className="font-medium">{payment.paidDate}</p>
-                        </div>
+                      {(payment.description || payment.month) && (
+                        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                          {payment.description || payment.month}
+                        </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-1">
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-0.5 shrink-0">
                       {payment.status !== "paid" && (
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="h-7 w-7 p-0"
                           onClick={() => handleMarkPaid(payment.id)}
                           disabled={updatePayment.isPending}
                           data-testid={`button-mark-paid-${payment.id}`}
@@ -360,17 +377,22 @@ export default function Payments() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="h-7 w-7 p-0"
                         onClick={() => handleDelete(payment.id)}
                         disabled={deletePayment.isPending}
                         data-testid={`button-delete-payment-${payment.id}`}
                       >
-                        <Trash2 className="w-4 h-4 text-destructive" />
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
+            <p className="text-xs text-muted-foreground text-center pt-1">
+              {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+              {(search || statusFilter !== "all") ? " matched" : ""}
+            </p>
           </div>
 
           {/* Desktop table */}
@@ -388,7 +410,7 @@ export default function Payments() {
                 </tr>
               </thead>
               <tbody>
-                {payments.map((payment, idx) => (
+                {filtered.map((payment, idx) => (
                   <tr
                     key={payment.id}
                     className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
@@ -444,6 +466,10 @@ export default function Payments() {
                 ))}
               </tbody>
             </table>
+            <div className="px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
+              {filtered.length} record{filtered.length !== 1 ? "s" : ""}
+              {(search || statusFilter !== "all") ? " matched" : ""}
+            </div>
           </div>
         </>
       )}
