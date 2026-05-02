@@ -70,17 +70,13 @@ type AddStudentForm = z.infer<typeof addStudentSchema>;
 export default function Students() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [educationFilter, setEducationFilter] = useState("all");
+  const [studyYearFilter, setStudyYearFilter] = useState("all");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const params: Record<string, string> = {};
-  if (search) params.search = search;
-  if (statusFilter !== "all") params.status = statusFilter;
-
-  const { data: students = [], isLoading } = useListStudents(
-    Object.keys(params).length ? params : undefined
-  );
+  const { data: students = [], isLoading } = useListStudents();
   const { data: rooms = [] } = useListRooms();
   const createStudent = useCreateStudent();
   const createPayment = useCreatePayment();
@@ -163,6 +159,20 @@ export default function Students() {
   };
 
   const availableRooms = rooms.filter((r) => r.status !== "maintenance" && r.occupied < r.capacity);
+
+  const educationOptions = Array.from(new Set(students.map((s) => s.education).filter(Boolean))) as string[];
+  const studyYearOptions = Array.from(new Set(students.map((s) => s.studyYear).filter(Boolean))) as string[];
+
+  const filteredStudents = students.filter((s) => {
+    const q = search.toLowerCase();
+    if (q && !s.name.toLowerCase().includes(q) && !s.email.toLowerCase().includes(q) && !s.phone.includes(q)) return false;
+    if (statusFilter !== "all" && s.status !== statusFilter) return false;
+    if (educationFilter !== "all" && s.education !== educationFilter) return false;
+    if (studyYearFilter !== "all" && s.studyYear !== studyYearFilter) return false;
+    return true;
+  });
+
+  const isFiltered = !!(search || statusFilter !== "all" || educationFilter !== "all" || studyYearFilter !== "all");
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -414,27 +424,62 @@ export default function Students() {
       </div>
 
       {/* Search + filter bar */}
-      <div className="flex flex-col sm:flex-row gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-          <Input
-            data-testid="input-search"
-            className="pl-9"
-            placeholder="Search by name, phone or email…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <Input
+              data-testid="input-search"
+              className="pl-9"
+              placeholder="Search by name, phone or email…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+            <SelectTrigger className="w-full sm:w-36" data-testid="select-status-filter">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Students</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
-          <SelectTrigger className="w-full sm:w-36" data-testid="select-status-filter">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Students</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Select value={educationFilter} onValueChange={setEducationFilter}>
+            <SelectTrigger className="w-full sm:flex-1" data-testid="select-education-filter">
+              <SelectValue placeholder="All Education" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Education</SelectItem>
+              {educationOptions.map((e) => (
+                <SelectItem key={e} value={e}>{e}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={studyYearFilter} onValueChange={setStudyYearFilter}>
+            <SelectTrigger className="w-full sm:flex-1" data-testid="select-study-year-filter">
+              <SelectValue placeholder="All Study Years" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Study Years</SelectItem>
+              {studyYearOptions.map((y) => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {isFiltered && (
+            <button
+              type="button"
+              onClick={() => { setSearch(""); setStatusFilter("all"); setEducationFilter("all"); setStudyYearFilter("all"); }}
+              className="text-sm text-muted-foreground hover:text-foreground underline-offset-2 hover:underline whitespace-nowrap self-center"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
@@ -443,13 +488,13 @@ export default function Students() {
             <Card key={i} className="animate-pulse h-20" />
           ))}
         </div>
-      ) : students.length === 0 ? (
+      ) : filteredStudents.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16 text-center">
             <User className="w-12 h-12 text-muted-foreground mb-4" />
             <p className="text-lg font-medium">No students found</p>
             <p className="text-sm text-muted-foreground mt-1">
-              {search || statusFilter !== "all" ? "Try adjusting your search or filter" : "Add a student to get started"}
+              {isFiltered ? "Try adjusting your search or filters" : "Add a student to get started"}
             </p>
           </CardContent>
         </Card>
@@ -457,7 +502,7 @@ export default function Students() {
         <>
           {/* Mobile card list */}
           <div className="flex flex-col gap-2 md:hidden">
-            {students.map((student) => (
+            {filteredStudents.map((student) => (
               <Card key={student.id} className="hover:shadow-sm transition-shadow" data-testid={`row-student-${student.id}`}>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-3">
@@ -523,8 +568,8 @@ export default function Students() {
               </Card>
             ))}
             <p className="text-xs text-muted-foreground text-center pt-1">
-              {students.length} student{students.length !== 1 ? "s" : ""}
-              {(search || statusFilter !== "all") ? " matched" : " total"}
+              {filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""}
+              {isFiltered ? ` matched` : " total"}
             </p>
           </div>
 
@@ -542,7 +587,7 @@ export default function Students() {
                 </tr>
               </thead>
               <tbody>
-                {students.map((student, idx) => (
+                {filteredStudents.map((student, idx) => (
                   <tr
                     key={student.id}
                     className={`border-b last:border-0 hover:bg-muted/30 transition-colors ${idx % 2 === 0 ? "" : "bg-muted/10"}`}
@@ -613,8 +658,8 @@ export default function Students() {
               </tbody>
             </table>
             <div className="px-4 py-3 border-t bg-muted/20 text-xs text-muted-foreground">
-              {students.length} student{students.length !== 1 ? "s" : ""}
-              {(search || statusFilter !== "all") ? " matched" : " total"}
+              {filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""}
+              {isFiltered ? " matched" : " total"}
             </div>
           </div>
         </>
