@@ -4,10 +4,12 @@ import {
   useGetRoom,
   useUpdateRoom,
   useUpdateStudent,
+  useCreateStudent,
   useListRooms,
   useListStudents,
   getGetRoomQueryKey,
   getListRoomsQueryKey,
+  getListStudentsQueryKey,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -212,6 +214,17 @@ function StudentEditDialog({
   );
 }
 
+const newStudentSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email("Invalid email"),
+  phone: z.string().min(6, "Phone is required"),
+  address: z.string().min(1, "Address is required"),
+  joinDate: z.string().min(1, "Join date is required"),
+  emergencyContact: z.string().optional(),
+  emergencyPhone: z.string().optional(),
+});
+type NewStudentForm = z.infer<typeof newStudentSchema>;
+
 function AssignStudentDialog({
   roomId,
   roomNumber,
@@ -226,24 +239,48 @@ function AssignStudentDialog({
   onAssigned: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<"existing" | "new">("existing");
   const [selectedId, setSelectedId] = useState<string>("");
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: allStudents = [] } = useListStudents();
   const updateStudent = useUpdateStudent();
+  const createStudent = useCreateStudent();
 
   const unassigned = allStudents.filter(
-    (s) => !currentStudentIds.includes(s.id) && s.status === "active"
+    (s) => !currentStudentIds.includes(s.id) && s.status === "active" && !s.roomId
   );
 
-  const handleAssign = () => {
+  const newStudentForm = useForm<NewStudentForm>({
+    resolver: zodResolver(newStudentSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      joinDate: new Date().toISOString().split("T")[0],
+      emergencyContact: "",
+      emergencyPhone: "",
+    },
+  });
+
+  const handleClose = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      setMode("existing");
+      setSelectedId("");
+      newStudentForm.reset();
+    }
+  };
+
+  const handleAssignExisting = () => {
     if (!selectedId) return;
     updateStudent.mutate(
       { id: Number(selectedId), data: { roomId } },
       {
         onSuccess: () => {
           toast({ title: "Student assigned to room" });
-          setOpen(false);
-          setSelectedId("");
+          handleClose(false);
           onAssigned();
         },
         onError: () => {
@@ -253,53 +290,182 @@ function AssignStudentDialog({
     );
   };
 
+  const handleCreateNew = async (values: NewStudentForm) => {
+    try {
+      await createStudent.mutateAsync({
+        data: {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          address: values.address,
+          joinDate: values.joinDate,
+          roomId,
+          emergencyContact: values.emergencyContact || null,
+          emergencyPhone: values.emergencyPhone || null,
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: getListStudentsQueryKey() });
+      toast({ title: `${values.name} added and assigned to Room ${roomNumber}` });
+      handleClose(false);
+      onAssigned();
+    } catch {
+      toast({ title: "Failed to create student", variant: "destructive" });
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline" disabled={isFull} className="gap-1.5">
           <UserPlus className="w-4 h-4" />
           Add Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-md max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Assign Student to Room {roomNumber}</DialogTitle>
+          <DialogTitle>Add Student to Room {roomNumber}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4 pt-1">
-          {unassigned.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No unassigned active students available.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Pick an active student who isn't in a room yet.
-              </p>
-              <Select value={selectedId} onValueChange={setSelectedId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a student…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {unassigned.map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>
-                      {s.name}
-                      {s.email ? ` — ${s.email}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button
-              onClick={handleAssign}
-              disabled={!selectedId || updateStudent.isPending}
-            >
-              {updateStudent.isPending ? "Assigning…" : "Assign"}
-            </Button>
-          </div>
+
+        {/* Mode toggle */}
+        <div className="flex rounded-lg border bg-muted/40 p-1 gap-1">
+          <button
+            type="button"
+            onClick={() => setMode("existing")}
+            className={`flex-1 text-sm py-1.5 rounded-md font-medium transition-colors ${
+              mode === "existing"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Existing Student
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("new")}
+            className={`flex-1 text-sm py-1.5 rounded-md font-medium transition-colors ${
+              mode === "new"
+                ? "bg-background shadow-sm text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            New Student
+          </button>
         </div>
+
+        {/* Existing student picker */}
+        {mode === "existing" && (
+          <div className="space-y-4">
+            {unassigned.length === 0 ? (
+              <div className="text-center py-6 space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  No unassigned active students available.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMode("new")}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Create a new student instead →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Pick an active student who isn't in a room yet.
+                </p>
+                <Select value={selectedId} onValueChange={setSelectedId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a student…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unassigned.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.name}{s.phone ? ` · ${s.phone}` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => handleClose(false)}>Cancel</Button>
+              <Button
+                onClick={handleAssignExisting}
+                disabled={!selectedId || updateStudent.isPending}
+              >
+                {updateStudent.isPending ? "Assigning…" : "Assign to Room"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* New student form */}
+        {mode === "new" && (
+          <Form {...newStudentForm}>
+            <form onSubmit={newStudentForm.handleSubmit(handleCreateNew)} className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <FormField control={newStudentForm.control} name="name" render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl><Input {...field} placeholder="Ravi Kumar" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="email" render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Email</FormLabel>
+                    <FormControl><Input {...field} type="email" placeholder="ravi@email.com" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="phone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone</FormLabel>
+                    <FormControl><Input {...field} placeholder="9876543210" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="joinDate" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Join Date</FormLabel>
+                    <FormControl><Input {...field} type="date" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="address" render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Address</FormLabel>
+                    <FormControl><Input {...field} placeholder="Street, City" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="emergencyContact" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Contact <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                    <FormControl><Input {...field} placeholder="Parent name" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={newStudentForm.control} name="emergencyPhone" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Emergency Phone <span className="text-muted-foreground text-xs">(optional)</span></FormLabel>
+                    <FormControl><Input {...field} placeholder="9876543200" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <p className="text-xs text-muted-foreground bg-muted/40 rounded-md px-3 py-2">
+                This student will be automatically assigned to Room {roomNumber}.
+              </p>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button type="button" variant="outline" onClick={() => handleClose(false)}>Cancel</Button>
+                <Button type="submit" disabled={createStudent.isPending}>
+                  {createStudent.isPending ? "Creating…" : "Create & Assign"}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );
