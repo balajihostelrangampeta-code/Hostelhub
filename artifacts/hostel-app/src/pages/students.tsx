@@ -38,7 +38,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Search, Trash2, ChevronRight, User, CreditCard, Download } from "lucide-react";
+import { Plus, Search, Trash2, ChevronRight, User, CreditCard } from "lucide-react";
 import { useListRooms } from "@workspace/api-client-react";
 import {
   Select,
@@ -177,30 +177,6 @@ export default function Students() {
 
   const isFiltered = !!(search || statusFilter !== "all" || educationFilter !== "all" || studyYearFilter !== "all");
 
-  const exportCSV = () => {
-    const headers = ["Name", "Phone", "Email", "Room", "Education", "Study Year", "Join Date", "Status"];
-    const rows = filteredStudents.map((s) => [
-      s.name,
-      s.phone,
-      s.email,
-      s.roomNumber ? `Room ${s.roomNumber}` : "",
-      s.education ?? "",
-      s.studyYear ?? "",
-      s.joinDate,
-      s.status,
-    ]);
-    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const date = new Date().toISOString().split("T")[0];
-    a.download = `students-${date}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
@@ -209,16 +185,6 @@ export default function Students() {
           <p className="text-muted-foreground mt-1">Manage all hostel residents</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={exportCSV}
-            disabled={filteredStudents.length === 0}
-            title="Export to CSV"
-          >
-            <Download className="w-4 h-4 mr-1.5" />
-            Export
-          </Button>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button data-testid="button-add-student">

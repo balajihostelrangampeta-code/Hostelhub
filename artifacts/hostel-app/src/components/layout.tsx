@@ -23,7 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Desktop sidebar */}
       <aside className="desktop-sidebar">
         <div className="sidebar-header">
-          <h1 className="sidebar-title">HostelHub</h1>
+          <h1 className="sidebar-title">Balaji Boys Hostel</h1>
           <p className="sidebar-sub">Operations Hub</p>
         </div>
         <nav className="sidebar-nav">
@@ -56,7 +56,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <div className="main-wrapper">
         {/* Mobile top header */}
         <header className="mobile-header">
-          <h1 className="mobile-title">HostelHub</h1>
+          <h1 className="mobile-title">Balaji Boys Hostel</h1>
           <Button
             variant="ghost"
             size="sm"
