@@ -1,12 +1,30 @@
-import { useGetDashboardStats } from "@workspace/api-client-react";
+import { useGetDashboardStats, useListPayments } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Home, AlertCircle, CreditCard, DollarSign } from "lucide-react";
+import { Users, Home, AlertCircle, CreditCard, DollarSign, AlertTriangle, ChevronRight } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { data: stats, isLoading, isError } = useGetDashboardStats();
+  const { data: overduePayments = [] } = useListPayments(
+    { status: "overdue" },
+    { query: { enabled: true } }
+  );
+
+  const overdueByStudent = overduePayments.reduce<
+    Record<number, { studentId: number; studentName: string; count: number; total: number; oldest: string }>
+  >((acc, p) => {
+    if (!acc[p.studentId]) {
+      acc[p.studentId] = { studentId: p.studentId, studentName: p.studentName ?? "Unknown", count: 0, total: 0, oldest: p.dueDate };
+    }
+    acc[p.studentId].count += 1;
+    acc[p.studentId].total += p.amount;
+    if (p.dueDate < acc[p.studentId].oldest) acc[p.studentId].oldest = p.dueDate;
+    return acc;
+  }, {});
+  const overdueStudents = Object.values(overdueByStudent).sort((a, b) => a.oldest.localeCompare(b.oldest));
 
   if (isLoading) {
     return <div className="space-y-6">
@@ -77,6 +95,47 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Overdue Alert */}
+      {overdueStudents.length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
+              <h2 className="text-lg font-semibold">Overdue Payments</h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive border border-destructive/20">
+                {overdueStudents.length} student{overdueStudents.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+            <Link href="/payments?status=overdue">
+              <Button variant="ghost" size="sm" className="text-xs gap-1 text-muted-foreground">
+                View all
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </Link>
+          </div>
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 overflow-hidden">
+            {overdueStudents.map((s, idx) => (
+              <Link key={s.studentId} href={`/students/${s.studentId}`}>
+                <div
+                  className={`flex items-center justify-between px-4 py-3 hover:bg-destructive/10 transition-colors cursor-pointer ${idx !== overdueStudents.length - 1 ? "border-b border-destructive/10" : ""}`}
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{s.studentName}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {s.count} installment{s.count !== 1 ? "s" : ""} · overdue since {s.oldest}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <p className="text-sm font-bold text-destructive">{formatCurrency(s.total)}</p>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="flex flex-col">
