@@ -5,14 +5,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
 import Dashboard from "@/pages/dashboard";
+import Students from "@/pages/students";
+import StudentDetail from "@/pages/student-detail";
+import Rooms from "@/pages/rooms";
+import RoomDetail from "@/pages/room-detail";
+import Payments from "@/pages/payments";
 
 const queryClient = new QueryClient();
-
-function Students() { return <div>Students</div>; }
-function StudentDetail() { return <div>Student Detail</div>; }
-function Rooms() { return <div>Rooms</div>; }
-function RoomDetail() { return <div>Room Detail</div>; }
-function Payments() { return <div>Payments</div>; }
 
 function Router() {
   return (
