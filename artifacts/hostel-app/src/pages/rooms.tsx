@@ -132,16 +132,16 @@ export default function Rooms() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 max-w-7xl mx-auto">
+      <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Rooms</h1>
-          <p className="text-muted-foreground mt-1">Manage all hostel rooms and occupancy</p>
+          <h1 className="text-2xl font-bold tracking-tight">Rooms</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Manage hostel rooms &amp; occupancy</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="button-add-room">
-              <Plus className="w-4 h-4 mr-2" />
+            <Button size="sm" className="shrink-0 mt-0.5" data-testid="button-add-room">
+              <Plus className="w-4 h-4 mr-1.5" />
               Add Room
             </Button>
           </DialogTrigger>
@@ -287,23 +287,24 @@ export default function Rooms() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {rooms.map((room) => (
             <Card
               key={room.id}
-              className="hover:shadow-md transition-shadow cursor-pointer group"
+              className="hover:shadow-md transition-shadow"
               data-testid={`card-room-${room.id}`}
             >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-3">
+                {/* Top row: room name + status badge */}
+                <div className="flex items-center justify-between gap-2 mb-1.5">
                   <div>
-                    <CardTitle className="text-lg">Room {room.number}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Floor {room.floor} • {typeLabels[room.type]}
+                    <p className="font-semibold text-base leading-tight">Room {room.number}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Floor {room.floor} · {typeLabels[room.type]}
                     </p>
                   </div>
                   <span
-                    className={`text-xs font-medium px-2 py-1 rounded-full border ${statusColors[room.status] || ""}`}
+                    className={`text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 ${statusColors[room.status] || ""}`}
                     data-testid={`status-room-${room.id}`}
                   >
                     {room.status === "maintenance" ? (
@@ -313,36 +314,42 @@ export default function Rooms() {
                     )}
                   </span>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Users className="w-4 h-4" />
-                    <span>{room.occupied} / {room.capacity} occupied</span>
+
+                {/* Occupancy bar */}
+                <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Users className="w-3.5 h-3.5" />
+                    <span>{room.occupied}/{room.capacity}</span>
                   </div>
-                  <div className="w-24 h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all ${room.occupied >= room.capacity ? "bg-primary" : "bg-primary/60"}`}
                       style={{ width: `${Math.min(100, (room.occupied / room.capacity) * 100)}%` }}
                     />
                   </div>
                 </div>
-                <div className="text-sm font-semibold">
-                  ₹{room.monthlyRent.toLocaleString()}<span className="text-muted-foreground font-normal">/month</span>
+
+                {/* Rent + amenities */}
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold">
+                    ₹{room.monthlyRent.toLocaleString()}<span className="text-muted-foreground font-normal text-xs">/mo</span>
+                  </p>
+                  {room.amenities && (
+                    <p className="text-xs text-muted-foreground truncate max-w-[55%] text-right">{room.amenities}</p>
+                  )}
                 </div>
-                {room.amenities && (
-                  <p className="text-xs text-muted-foreground truncate">{room.amenities}</p>
-                )}
-                <div className="flex gap-2 pt-1">
+
+                {/* Actions */}
+                <div className="flex gap-1.5">
                   <Link href={`/rooms/${room.id}`} className="flex-1">
-                    <Button variant="outline" size="sm" className="w-full" data-testid={`button-view-room-${room.id}`}>
+                    <Button variant="outline" size="sm" className="w-full h-7 text-xs" data-testid={`button-view-room-${room.id}`}>
                       View Students
                     </Button>
                   </Link>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" data-testid={`button-delete-room-${room.id}`}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" data-testid={`button-delete-room-${room.id}`}>
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
