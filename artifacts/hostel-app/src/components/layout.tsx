@@ -2,51 +2,62 @@ import { ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { LayoutDashboard, Users, Home, CreditCard } from "lucide-react";
 
+const navItems = [
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/students", label: "Students", icon: Users },
+  { href: "/rooms", label: "Rooms", icon: Home },
+  { href: "/payments", label: "Payments", icon: CreditCard },
+];
+
 export function Layout({ children }: { children: ReactNode }) {
   const [location] = useLocation();
 
-  const navItems = [
-    { href: "/", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/students", label: "Students", icon: Users },
-    { href: "/rooms", label: "Rooms", icon: Home },
-    { href: "/payments", label: "Payments", icon: CreditCard },
-  ];
+  const isActive = (href: string) =>
+    href === "/" ? location === "/" || location === "/dashboard" : location.startsWith(href);
 
   return (
-    <div className="flex min-h-[100dvh] bg-muted/30">
-      <aside className="w-64 border-r bg-card flex flex-col hidden md:flex">
-        <div className="p-6 border-b">
-          <h1 className="text-xl font-bold tracking-tight text-primary">HostelHub</h1>
-          <p className="text-xs text-muted-foreground mt-1">Operations Hub</p>
+    <div className="layout-root">
+      {/* Desktop sidebar */}
+      <aside className="desktop-sidebar">
+        <div className="sidebar-header">
+          <h1 className="sidebar-title">HostelHub</h1>
+          <p className="sidebar-sub">Operations Hub</p>
         </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
-            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                >
-                  <item.icon className="w-4 h-4" />
-                  {item.label}
-                </div>
-              </Link>
-            );
-          })}
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href}>
+              <div className={`sidebar-link ${isActive(item.href) ? "sidebar-link--active" : ""}`}>
+                <item.icon className="nav-icon" />
+                {item.label}
+              </div>
+            </Link>
+          ))}
         </nav>
       </aside>
-      <main className="flex-1 flex flex-col">
-        <header className="h-16 border-b bg-card flex items-center px-6 md:hidden">
-          <h1 className="text-lg font-bold text-primary">HostelHub</h1>
+
+      {/* Main content */}
+      <div className="main-wrapper">
+        {/* Mobile top header */}
+        <header className="mobile-header">
+          <h1 className="mobile-title">HostelHub</h1>
         </header>
-        <div className="flex-1 p-6 md:p-8 overflow-auto">
+
+        <main className="page-content">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
+
+      {/* Mobile bottom tab bar */}
+      <nav className="bottom-tabs" role="navigation" aria-label="Main navigation">
+        {navItems.map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div className={`tab-item ${isActive(item.href) ? "tab-item--active" : ""}`}>
+              <item.icon className="tab-icon" />
+              <span className="tab-label">{item.label}</span>
+            </div>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }
