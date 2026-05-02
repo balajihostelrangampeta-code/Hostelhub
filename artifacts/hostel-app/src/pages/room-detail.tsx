@@ -26,7 +26,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench, Mail, UserPlus } from "lucide-react";
+import { ArrowLeft, Edit, Users, User, Phone, ChevronRight, Wrench, Mail, UserPlus, UserMinus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -359,6 +359,24 @@ export default function RoomDetail() {
       : undefined,
   });
 
+  const removeFromRoom = useUpdateStudent();
+
+  const handleRemoveFromRoom = (studentId: number) => {
+    removeFromRoom.mutate(
+      { id: studentId, data: { roomId: null } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getGetRoomQueryKey(roomId) });
+          queryClient.invalidateQueries({ queryKey: getListRoomsQueryKey() });
+          toast({ title: "Student removed from room" });
+        },
+        onError: () => {
+          toast({ title: "Failed to remove student", variant: "destructive" });
+        },
+      }
+    );
+  };
+
   const onEditSubmit = (values: EditRoomForm) => {
     updateRoom.mutate(
       {
@@ -673,6 +691,17 @@ export default function RoomDetail() {
                           queryClient.invalidateQueries({ queryKey: getGetRoomQueryKey(roomId) });
                         }}
                       />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Remove from room"
+                        disabled={removeFromRoom.isPending}
+                        onClick={() => handleRemoveFromRoom(student.id)}
+                        data-testid={`button-remove-student-${student.id}`}
+                      >
+                        <UserMinus className="w-3.5 h-3.5" />
+                      </Button>
                       <Link href={`/students/${student.id}`}>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" data-testid={`button-view-student-${student.id}`}>
                           <ChevronRight className="w-4 h-4" />

@@ -242,23 +242,25 @@ export default function StudentDetail() {
         <span className="font-medium">{student.name}</span>
       </div>
 
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-7 h-7 text-primary" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+            <User className="w-6 h-6 text-primary" />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight" data-testid="text-student-name">{student.name}</h1>
-            <p className="text-muted-foreground text-sm">{student.email}</p>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl font-bold tracking-tight leading-tight" data-testid="text-student-name">{student.name}</h1>
+              <Badge variant={student.status === "active" ? "default" : "secondary"} data-testid="status-student" className="shrink-0">
+                {student.status}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-sm truncate">{student.email}</p>
           </div>
-          <Badge variant={student.status === "active" ? "default" : "secondary"} data-testid="status-student">
-            {student.status}
-          </Badge>
         </div>
         <Dialog open={editOpen} onOpenChange={setEditOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" data-testid="button-edit-student">
-              <Edit className="w-4 h-4 mr-2" />
+            <Button variant="outline" size="sm" className="shrink-0" data-testid="button-edit-student">
+              <Edit className="w-4 h-4 mr-1.5" />
               Edit
             </Button>
           </DialogTrigger>
