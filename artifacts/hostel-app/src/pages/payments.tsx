@@ -24,7 +24,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, CreditCard, CheckCircle, Trash2, Search, User } from "lucide-react";
+import { Plus, CreditCard, CheckCircle, Trash2, Search, User, AlertTriangle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -55,15 +55,40 @@ export default function Payments() {
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "paid" | "overdue">("all");
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [markingOverdue, setMarkingOverdue] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   const params = statusFilter !== "all" ? { status: statusFilter } : undefined;
   const { data: payments = [], isLoading } = useListPayments(params);
+  const { data: allPending = [] } = useListPayments({ status: "pending" });
   const { data: students = [] } = useListStudents();
   const createPayment = useCreatePayment();
   const updatePayment = useUpdatePayment();
   const deletePayment = useDeletePayment();
+
+  const today = new Date().toISOString().split("T")[0];
+  const overdueEligible = allPending.filter((p) => p.dueDate < today);
+
+  const handleMarkAllOverdue = async () => {
+    if (overdueEligible.length === 0) return;
+    setMarkingOverdue(true);
+    try {
+      await Promise.all(
+        overdueEligible.map((p) =>
+          updatePayment.mutateAsync({ id: p.id, data: { status: "overdue" } })
+        )
+      );
+      queryClient.invalidateQueries({ queryKey: getListPaymentsQueryKey() });
+      toast({
+        title: `${overdueEligible.length} payment${overdueEligible.length !== 1 ? "s" : ""} marked overdue`,
+      });
+    } catch {
+      toast({ title: "Some payments could not be updated", variant: "destructive" });
+    } finally {
+      setMarkingOverdue(false);
+    }
+  };
 
   const form = useForm<AddPaymentForm>({
     resolver: zodResolver(addPaymentSchema),
@@ -278,7 +303,7 @@ export default function Payments() {
         </CardContent>
       </Card>
 
-      {/* Search + filter bar */}
+      {/* Search + filter + bulk action bar */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
@@ -301,6 +326,21 @@ export default function Payments() {
             <SelectItem value="overdue">Overdue</SelectItem>
           </SelectContent>
         </Select>
+        <Button
+          variant="outline"
+          onClick={handleMarkAllOverdue}
+          disabled={overdueEligible.length === 0 || markingOverdue}
+          className="gap-2 shrink-0 w-full sm:w-auto"
+          data-testid="button-mark-all-overdue"
+          title={overdueEligible.length === 0 ? "No pending payments past their due date" : `Mark ${overdueEligible.length} pending payment${overdueEligible.length !== 1 ? "s" : ""} as overdue`}
+        >
+          <AlertTriangle className="w-4 h-4 text-amber-500" />
+          {markingOverdue
+            ? "Updating…"
+            : overdueEligible.length > 0
+            ? `Mark Overdue (${overdueEligible.length})`
+            : "Mark Overdue"}
+        </Button>
       </div>
 
       {isLoading ? (
